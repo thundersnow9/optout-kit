@@ -1,0 +1,77 @@
+name: reusable-deadlines
+
+# Called by a PRIVATE state repo. This workflow never sees personal data:
+# the ledger records broker status and dates, not who you are.
+
+on:
+  workflow_call:
+    inputs:
+      state:
+        required: true
+        type: string
+      ledger-path:
+        required: false
+        type: string
+        default: ledger
+      kit-ref:
+        required: false
+        type: string
+        default: main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out the private state repo
+        uses: actions/checkout@v4
+
+      - name: Check out optout-kit
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/optout-kit
+          ref: ${{ inputs.kit-ref }}
+          path: .optout-kit
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -e .optout-kit
+
+      - name: Evaluate statutory clocks
+        id: clocks
+        run: |
+          optout check-clocks --state "${{ inputs.state }}" \
+            --ledger "${{ inputs.ledger-path }}" --issue > /tmp/issue.md
+          cat /tmp/issue.md
+          if grep -q "Escalations due" /tmp/issue.md; then
+            echo "due=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open a tracking issue
+        if: steps.clocks.outputs.due == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/issue.md', 'utf8');
+            const title = `Escalations due (${{ inputs.state }})`;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'escalation',
+            });
+            const match = existing.data.find(i => i.title === title);
+            if (match) {
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: match.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['escalation'],
+              });
+            }

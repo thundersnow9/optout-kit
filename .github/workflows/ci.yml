@@ -1,0 +1,70 @@
+name: ci
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e . pytest
+      - run: pytest tests/ -q
+
+  pii-guard:
+    # Catches personal data pasted into fixtures or examples. The runner never
+    # has access to anyone's real profile, so this is the generic-pattern layer.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Scan changed lines for PII patterns
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            BASE=$(git rev-list --max-parents=0 HEAD | tail -1)
+          fi
+          git diff "$BASE" HEAD --unified=0 > /tmp/diff.patch
+          python - <<'PY'
+          from optout_kit import guard
+          diff = open("/tmp/diff.patch").read()
+          findings = guard.scan_generic(diff)
+          print(guard.report(findings))
+          raise SystemExit(1 if findings else 0)
+          PY
+
+  matrix-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Every verified state entry must cite primary sources
+        run: |
+          python - <<'PY'
+          from optout_kit import laws
+          bad = []
+          for code, law in laws.all_states().items():
+              if law.verified and not law.raw.get("sources"):
+                  bad.append(code)
+              if not law.raw.get("deletion_right_citation"):
+                  bad.append(f"{code} (no deletion citation)")
+          if bad:
+              raise SystemExit(f"state entries marked verified without sources: {bad}")
+          print("state-law matrix OK")
+          PY

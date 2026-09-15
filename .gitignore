@@ -1,0 +1,15 @@
+# Upstream broker data is CC BY-NC-SA: fetched at runtime, never committed
+.cache/
+
+# Personal data must never live in this repo. Belongs in optout-state (private).
+profile.json
+canaries.json
+ledger/
+*.local.json
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/

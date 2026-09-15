@@ -1,0 +1,8 @@
+The state-law matrix (data/state-laws.json) is original work by the optout-kit
+contributors, dedicated to the public domain under CC0 1.0 Universal.
+
+https://creativecommons.org/publicdomain/zero/1.0/
+
+It contains no third-party data. Broker directory data from Optery and the
+Big-Ass Data Broker Opt-Out List is CC BY-NC-SA 4.0 and is deliberately NOT
+included here; optout-kit fetches it at runtime. See docs/attribution.md.

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "optout-kit"
+version = "0.1.0"
+description = "Statute-aware data broker takedown tooling. No dependencies, no telemetry, no PII in git."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+optout = "optout_kit.cli:main"
+
+[tool.setuptools]
+packages = ["optout_kit"]
+
+[tool.setuptools.package-data]
+optout_kit = ["data/*.json", "templates/*.md"]

@@ -1,0 +1,17 @@
+#!/bin/sh
+# optout-kit PII guard.
+# Install:  cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# Blocks a commit whose staged diff contains personal data. Runs the generic
+# pattern layer always, and the exact-match layer when a profile.json is present.
+
+PROFILE=""
+for p in profile.json ../optout-state/profile.json; do
+    [ -f "$p" ] && PROFILE="--profile $p" && break
+done
+
+if command -v optout >/dev/null 2>&1; then
+    optout guard $PROFILE || exit 1
+else
+    python3 -m optout_kit.cli guard $PROFILE || exit 1
+fi

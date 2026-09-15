@@ -1,0 +1,39 @@
+name: Add or correct a state
+description: Contribute a state-law matrix entry
+labels: ["state-law"]
+body:
+  - type: input
+    id: state
+    attributes:
+      label: State
+      placeholder: "WA"
+    validations: { required: true }
+  - type: input
+    id: citation
+    attributes:
+      label: Deletion right citation
+      placeholder: "RCW 19.373.030"
+    validations: { required: true }
+  - type: textarea
+    id: sources
+    attributes:
+      label: Primary sources
+      description: >
+        Links to the statute, the state AG, or the state privacy regulator.
+        Law-firm summaries and vendor comparison charts are not primary sources.
+    validations: { required: true }
+  - type: textarea
+    id: details
+    attributes:
+      label: Response deadline, appeal window, AG complaint route, GPC status
+      description: Note where the appeal window differs from the response window.
+    validations: { required: true }
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I checked these citations against primary sources, not a summary.
+          required: true
+        - label: This issue contains no personal data.
+          required: true

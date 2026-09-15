@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "license": "CC0-1.0",
+  "disclaimer": "Good-faith reading of public law by non-lawyers. NOT legal advice. Verify against primary sources before relying on any citation. Entries with \"verified\": false have not been confirmed against primary sources at the subsection level.",
+  "last_reviewed": "2026-09-14",
+  "states": {
+    "CA": {
+      "name": "California",
+      "law_name": "California Consumer Privacy Act, as amended by CPRA; DELETE Act",
+      "law_abbrev": "CCPA/CPRA",
+      "effective": "2020-01-01",
+      "citation_range": "Cal. Civ. Code 1798.100 et seq.; DELETE Act at 1798.99.80 et seq.",
+      "deletion_right_citation": "Cal. Civ. Code 1798.105",
+      "response_days": 45,
+      "extension_days": 45,
+      "appeal": {
+        "available": false,
+        "citation": null,
+        "response_days": null,
+        "note": "CCPA has no statutory appeal step. Escalate directly to the CPPA or the AG."
+      },
+      "ag_complaint": {
+        "name": "California Privacy Protection Agency",
+        "email": "databrokers@cppa.ca.gov",
+        "url": "https://cppa.ca.gov/",
+        "note": "CalPrivacy enforces the data broker registry and DROP."
+      },
+      "gpc_mandatory": true,
+      "gpc_since": "2021-01-01",
+      "broker_registry": {
+        "exists": true,
+        "citation": "Cal. Civ. Code 1798.99.80 et seq.",
+        "administered_by": "California Privacy Protection Agency",
+        "public_list_url": "https://cppa.ca.gov/data_broker_registry/",
+        "downloadable": true,
+        "registered_count": 603,
+        "count_as_of": "2026-09-01"
+      },
+      "thresholds": "Businesses with >$25M gross revenue, or buying/selling/sharing personal info of 100k+ consumers/households, or deriving 50%+ of revenue from selling/sharing personal info.",
+      "preferred_mechanism": {
+        "id": "DROP",
+        "name": "Delete Request and Opt-out Platform",
+        "url": "https://consumer.drop.privacy.ca.gov",
+        "cost": "free",
+        "covers_brokers": 603,
+        "live_since": "2026-01-01",
+        "enforceable_since": "2026-08-01",
+        "residency_verification": "California residency verified via the California Identity Gateway (Socure / Login.gov).",
+        "broker_poll_interval_days": 45,
+        "penalty": "$200 per request per day of noncompliance",
+        "note": "A single verified request binds every registered data broker. For a California resident this supersedes per-broker outreach entirely. Do not automate submission: the DROP Terms of Use prohibit exploiting access to the platform, and it is a one-time manual step regardless.",
+        "automate": false
+      },
+      "verified": true,
+      "sources": [
+        "https://cppa.ca.gov/data_brokers/",
+        "https://privacy.ca.gov/drop/",
+        "https://consumer.drop.privacy.ca.gov"
+      ]
+    },
+    "OR": {
+      "name": "Oregon",
+      "law_name": "Oregon Consumer Privacy Act",
+      "law_abbrev": "OCPA",
+      "effective": "2024-07-01",
+      "citation_range": "ORS 646A.570-646A.589",
+      "deletion_right_citation": "ORS 646A.574",
+      "response_days": 45,
+      "extension_days": 45,
+      "response_citation": "ORS 646A.576(5)",
+      "appeal": {
+        "available": true,
+        "citation": "ORS 646A.578",
+        "response_days": 45,
+        "note": "On denial of an appeal the controller must tell the consumer how to complain to the Attorney General."
+      },
+      "ag_complaint": {
+        "name": "Oregon Department of Justice, Privacy Unit",
+        "email": "oregonprivacy@doj.oregon.gov",
+        "url": "https://www.doj.state.or.us/consumer-protection/id-theft-data-breaches/privacy/",
+        "note": "The Attorney General has sole enforcement authority. In the first year the Privacy Unit received 214 complaints, a majority concerning online data brokers."
+      },
+      "gpc_mandatory": true,
+      "gpc_since": "2026-01-01",
+      "broker_registry": {
+        "exists": true,
+        "citation": "ORS 646A.592 (HB 2052, 2023)",
+        "administered_by": "Oregon Division of Financial Regulation",
+        "public_list_url": "https://dfr.oregon.gov/business/licensing/data-broker-registry/pages/index.aspx",
+        "downloadable": false,
+        "note": "Registration is required before collecting, selling or licensing brokered personal data in Oregon. A verification tool exists but no bulk download. An unregistered broker is already in violation, which is useful leverage in a complaint."
+      },
+      "thresholds": "Controls or processes personal data of 100,000+ consumers, OR 25,000+ consumers while deriving over 25% of annual gross revenue from selling personal data.",
+      "cure_period": {
+        "exists": false,
+        "ended": "2026-01-01",
+        "note": "The 30-day right to cure sunset on 2026-01-01. The AG may now enforce immediately."
+      },
+      "preferred_mechanism": null,
+      "verified": true,
+      "sources": [
+        "https://www.doj.state.or.us/consumer-protection/for-businesses/privacy-law-faqs-for-businesses/",
+        "https://www.doj.state.or.us/media-home/news-media-releases/attorney-general-rayfield-releases-one-year-report-on-oregon-consumer-privacy-act/",
+        "https://dfr.oregon.gov/business/licensing/data-broker-registry/pages/index.aspx"
+      ]
+    },
+    "TX": {
+      "name": "Texas",
+      "law_name": "Texas Data Privacy and Security Act",
+      "law_abbrev": "TDPSA",
+      "effective": "2024-07-01",
+      "citation_range": "Tex. Bus. & Com. Code ch. 541",
+      "deletion_right_citation": "Tex. Bus. & Com. Code 541.051",
+      "response_days": 45,
+      "extension_days": 45,
+      "response_citation": "Tex. Bus. & Com. Code 541.052",
+      "appeal": {
+        "available": true,
+        "citation": "Tex. Bus. & Com. Code 541.053",
+        "response_days": 60,
+        "note": "Appeal response is 60 days, not 45. On denial the controller must provide a method to complain to the Attorney General."
+      },
+      "ag_complaint": {
+        "name": "Office of the Texas Attorney General, Consumer Protection",
+        "email": null,
+        "url": "https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint/consumer-privacy-rights/texas-data-privacy-and-security-act",
+        "note": "Complaints are filed through the online form."
+      },
+      "gpc_mandatory": true,
+      "gpc_since": "2025-01-01",
+      "broker_registry": {
+        "exists": true,
+        "citation": "Tex. Bus. & Com. Code ch. 509",
+        "administered_by": "Texas Secretary of State",
+        "public_list_url": null,
+        "downloadable": false
+      },
+      "thresholds": "Applies to entities doing business in Texas that process personal data, excluding small businesses as defined by the SBA. Notably broader than the consumer-count thresholds used by most states.",
+      "preferred_mechanism": null,
+      "verified": true,
+      "sources": [
+        "https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint/consumer-privacy-rights/texas-data-privacy-and-security-act"
+      ]
+    },
+    "VA": {
+      "name": "Virginia",
+      "law_name": "Virginia Consumer Data Protection Act",
+      "law_abbrev": "VCDPA",
+      "effective": "2023-01-01",
+      "citation_range": "Va. Code 59.1-575 et seq.",
+      "deletion_right_citation": "Va. Code 59.1-577",
+      "response_days": 45,
+      "extension_days": 45,
+      "appeal": {
+        "available": true,
+        "citation": "Va. Code 59.1-578",
+        "response_days": 60,
+        "note": "Citation and appeal window need primary-source confirmation."
+      },
+      "ag_complaint": {
+        "name": "Virginia Office of the Attorney General",
+        "email": null,
+        "url": "https://www.oag.state.va.us/consumer-protection",
+        "note": null
+      },
+      "gpc_mandatory": false,
+      "gpc_since": null,
+      "broker_registry": {"exists": false},
+      "thresholds": "100,000+ consumers, OR 25,000+ consumers while deriving over 50% of gross revenue from the sale of personal data.",
+      "preferred_mechanism": null,
+      "verified": false,
+      "sources": []
+    },
+    "CO": {
+      "name": "Colorado",
+      "law_name": "Colorado Privacy Act",
+      "law_abbrev": "CPA",
+      "effective": "2023-07-01",
+      "citation_range": "C.R.S. 6-1-1301 et seq.",
+      "deletion_right_citation": "C.R.S. 6-1-1306(1)(d)",
+      "response_days": 45,
+      "extension_days": 45,
+      "appeal": {
+        "available": true,
+        "citation": "C.R.S. 6-1-1306(3)",
+        "response_days": 45,
+        "note": "Citation needs primary-source confirmation."
+      },
+      "ag_complaint": {
+        "name": "Colorado Department of Law",
+        "email": null,
+        "url": "https://coag.gov/file-complaint/",
+        "note": null
+      },
+      "gpc_mandatory": true,
+      "gpc_since": "2024-07-01",
+      "broker_registry": {"exists": false},
+      "thresholds": "100,000+ consumers, OR 25,000+ consumers while deriving revenue from the sale of personal data.",
+      "preferred_mechanism": null,
+      "verified": false,
+      "sources": []
+    },
+    "CT": {
+      "name": "Connecticut",
+      "law_name": "Connecticut Data Privacy Act",
+      "law_abbrev": "CTDPA",
+      "effective": "2023-07-01",
+      "citation_range": "Conn. Gen. Stat. 42-515 et seq.",
+      "deletion_right_citation": "Conn. Gen. Stat. 42-518",
+      "response_days": 45,
+      "extension_days": 45,
+      "appeal": {
+        "available": true,
+        "citation": "Conn. Gen. Stat. 42-518",
+        "response_days": 60,
+        "note": "Citation needs primary-source confirmation."
+      },
+      "ag_complaint": {
+        "name": "Connecticut Office of the Attorney General",
+        "email": null,
+        "url": "https://portal.ct.gov/ag",
+        "note": null
+      },
+      "gpc_mandatory": true,
+      "gpc_since": "2025-01-01",
+      "broker_registry": {"exists": false},
+      "thresholds": "100,000+ consumers, OR 25,000+ consumers while deriving over 25% of gross revenue from the sale of personal data.",
+      "preferred_mechanism": null,
+      "verified": false,
+      "sources": []
+    }
+  }
+}
