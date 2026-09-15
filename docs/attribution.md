@@ -14,7 +14,7 @@ would impose those terms on everything built on top of it, which is not what som
 installing an MIT-licensed tool expects, and could put them in silent violation.
 
 So `optout_kit/directory.py` fetches the Optery directory at runtime into a gitignored
-`.cache/`. Each user obtains the data directly, under its own license. `data/broker-notes.json`
+`.cache/`. Each user obtains the data directly, under its own license. `optout_kit/data/broker-notes.json`
 references broker *names* and priority tiers only; no descriptive content is copied.
 
 Please credit both projects if you build on this, and consider contributing corrections
@@ -22,5 +22,5 @@ upstream where they belong.
 
 ## What is ours
 
-`data/state-laws.json` and `data/broker-notes.json` are original work by optout-kit
+`optout_kit/data/state-laws.json` and `optout_kit/data/broker-notes.json` are original work by optout-kit
 contributors, released CC0. The code is MIT.

@@ -4,7 +4,7 @@ The most valuable contribution is **a verified state-law entry**.
 
 ## Adding or correcting a state
 
-Entries in `data/state-laws.json` carry a `verified` flag. Set it to `true` only when
+Entries in `optout_kit/data/state-laws.json` carry a `verified` flag. Set it to `true` only when
 every citation has been checked against a **primary source**: the statute itself, the
 state Attorney General, or the state privacy regulator. Not a law-firm blog post, not a
 vendor comparison chart, and not an LLM.
@@ -27,7 +27,7 @@ so the tool routes users there instead of generating hundreds of redundant reque
 
 ## Broker notes
 
-`data/broker-notes.json` records observations: priority tier, whether a broker demands
+`optout_kit/data/broker-notes.json` records observations: priority tier, whether a broker demands
 identity documents, whether it requires a phone call. Reference broker *names* only.
 Do not copy descriptive text from the upstream CC BY-NC-SA directories.
 

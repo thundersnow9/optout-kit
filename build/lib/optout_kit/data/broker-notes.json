@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "license": "CC0-1.0",
+  "note": "Community-maintained observations about individual brokers' opt-out processes. Keyed by slug of the broker title as it appears in the upstream directory. Fields are all optional; absent means unknown, not false. Priority tiers follow the Big-Ass Data Broker Opt-Out List (CC BY-NC-SA, Yael Grauer) which flags 'crucial' and 'high priority' targets; only the names are referenced here, no content is copied.",
+  "brokers": {
+    "spokeo": {
+      "tier": 1,
+      "requires_id": false,
+      "confirm_via": "email"
+    },
+    "beenverified": {
+      "tier": 1,
+      "requires_id": false,
+      "confirm_via": "email"
+    },
+    "whitepages": {
+      "tier": 1,
+      "requires_id": false,
+      "requires_phone": true
+    },
+    "radaris": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "mylife": {
+      "tier": 1,
+      "requires_id": false,
+      "requires_phone": true
+    },
+    "intelius": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "nuwber": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "that-s-them": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "thatsthem": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "checkpeople": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "smartbackgroundchecks": {
+      "tier": 1,
+      "requires_id": false
+    },
+    "usphonebook": {
+      "tier": 2,
+      "requires_id": false
+    },
+    "lexisnexis": {
+      "tier": 0,
+      "requires_id": false,
+      "note": "Upstream wholesaler. Opting out here starves many downstream sites."
+    },
+    "acxiom": {
+      "tier": 0,
+      "requires_id": false,
+      "note": "Upstream wholesaler."
+    },
+    "epsilon": {
+      "tier": 0,
+      "requires_id": false,
+      "note": "Upstream wholesaler."
+    },
+    "data-axle": {
+      "tier": 0,
+      "requires_id": false,
+      "note": "Upstream wholesaler (formerly Infogroup)."
+    },
+    "thomson-reuters": {
+      "tier": 0,
+      "requires_id": false,
+      "note": "Upstream wholesaler."
+    }
+  },
+  "supplemental": {
+    "note": "Brokers not present in the upstream directory but worth contacting. Routes marked needs_verification should be confirmed before use.",
+    "brokers": [
+      {
+        "title": "LexisNexis Risk Solutions",
+        "type": "Profile Data Broker",
+        "email": "privacy.requests@lexisnexis.com",
+        "opt_out_url": "https://optout.lexisnexis.com/",
+        "tier": 0,
+        "requires_id": false,
+        "needs_verification": true,
+        "note": "Major upstream wholesaler feeding many downstream people-search sites."
+      }
+    ]
+  }
+}

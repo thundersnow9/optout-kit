@@ -17,7 +17,7 @@ Tracking those deadlines is purely mechanical. That is what this automates.
 
 ## The state-law matrix
 
-[`data/state-laws.json`](data/state-laws.json) (CC0) maps each US state privacy law to
+[`optout_kit/data/state-laws.json`](optout_kit/data/state-laws.json) (CC0) maps each US state privacy law to
 the mechanics you need to actually use it: the deletion-right citation, the response
 deadline and extension, whether an appeal exists and how long it runs, where the AG
 complaint goes, whether Global Privacy Control is mandatory, and the broker-registry
@@ -109,4 +109,4 @@ Verify citations against primary sources before relying on them.
 
 ## License
 
-Code: MIT. `data/state-laws.json` and `data/broker-notes.json`: CC0.
+Code: MIT. `optout_kit/data/state-laws.json` and `optout_kit/data/broker-notes.json`: CC0.
