@@ -65,3 +65,17 @@ def test_texas_appeal_window_is_sixty_days(tmp_path):
     assert clocks.evaluate([e], "TX", today=TODAY) == []
     e2 = _entry(tmp_path, "spokeo2", "appealed", [{"date": _ago(70), "type": "appealed"}])
     assert [a.action for a in clocks.evaluate([e2], "TX", today=TODAY)] == ["ag_complaint"]
+
+
+def test_user_exclusion_never_escalates(tmp_path):
+    # A broker the user deliberately excluded stays quiet forever, even though
+    # its deadline would otherwise have lapsed long ago.
+    e = _entry(tmp_path, "someonesemployer", "skipped_employer_conflict",
+               [{"date": _ago(400), "type": "sent"}])
+    assert clocks.evaluate([e], "OR", today=TODAY) == []
+
+
+def test_exclusion_survives_a_relisting(tmp_path):
+    e = _entry(tmp_path, "someonesemployer", "skipped_employer_conflict",
+               [{"date": _ago(400), "type": "sent"}, {"date": _ago(5), "type": "relisted"}])
+    assert clocks.evaluate([e], "OR", today=TODAY) == []

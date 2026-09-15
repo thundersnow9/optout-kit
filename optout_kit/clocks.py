@@ -16,7 +16,23 @@ from typing import Any
 from . import laws
 
 # Terminal states: nothing further is owed to us or by us.
-TERMINAL = {"confirmed", "skipped_id_required", "no_route", "abandoned"}
+#
+# skipped_employer_conflict is a deliberate user exclusion, for a broker the
+# user has a relationship with (employer, parent company, client). It is
+# terminal and never escalates, but stays in the ledger so the gap in coverage
+# is visible rather than silently missing.
+# Never escalates under any circumstance, including a later relisting: either
+# we deliberately excluded the broker, or there is no route to act on.
+NEVER_ESCALATE = {
+    "skipped_id_required",
+    "skipped_employer_conflict",
+    "no_route",
+    "abandoned",
+}
+
+# Done for now. "confirmed" is terminal only until the data comes back, which
+# reopens it as a refile; the NEVER_ESCALATE states do not reopen.
+TERMINAL = NEVER_ESCALATE | {"confirmed"}
 
 ACTIONS = {
     "appeal": "Statutory deadline passed with no adequate response",
@@ -106,6 +122,8 @@ def evaluate(entries: list[Entry], state: str, today: date | None = None) -> lis
 
     for e in entries:
         status = e.status
+        if status in NEVER_ESCALATE:
+            continue
         if status in TERMINAL and not e.event_date("relisted"):
             continue
 

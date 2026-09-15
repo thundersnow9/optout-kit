@@ -84,6 +84,13 @@ def cmd_draft(args: argparse.Namespace) -> int:
     profile = _load_profile(args.profile)
     rows = [t for t in targets.build(args.state, allow_id_upload=args.allow_id)
             if t.actionable and t.method == "email"]
+    # Never draft for a broker the user has deliberately excluded.
+    if args.ledger:
+        excluded = {
+            e.slug for e in clocks.load_ledger(Path(args.ledger))
+            if e.status in clocks.TERMINAL
+        }
+        rows = [t for t in rows if t.slug not in excluded]
     if args.tier is not None:
         rows = [t for t in rows if t.tier == args.tier]
     rows = rows[: args.limit]
@@ -246,6 +253,7 @@ def main(argv: list[str] | None = None) -> int:
     dr.add_argument("--limit", type=int, default=25)
     dr.add_argument("--tier", type=int)
     dr.add_argument("--allow-id", action="store_true")
+    dr.add_argument("--ledger", help="skip brokers already terminal in this ledger")
     dr.add_argument("--dry-run", action="store_true")
     dr.add_argument("--out")
     dr.set_defaults(fn=cmd_draft)

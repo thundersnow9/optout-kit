@@ -46,3 +46,23 @@ cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 excludes SSN, driver's licence number and full date of birth. A broker does not need
 those to locate a listing, and several have been breached. If a broker insists on
 identity documents, the default policy is to skip it rather than comply.
+
+## Excluding a broker on purpose
+
+Some people have a relationship with a broker that makes a statutory demand letter
+a bad idea: you work there, your employer is a subsidiary, or they are a client.
+
+Set that ledger entry's status to `skipped_employer_conflict`. It is terminal and
+never escalates, and unlike `confirmed` it does not reopen if your data is later
+relisted. The entry stays in the ledger so the gap in your coverage stays visible
+rather than quietly disappearing.
+
+```json
+{ "slug": "example-broker", "status": "skipped_employer_conflict", "events": [] }
+```
+
+`optout draft --ledger ledger` skips anything already terminal, so an excluded
+broker never gets a draft rendered for it by accident.
+
+Keep the *reason* in your private repo. The public tool only needs to know that an
+exclusion exists, not why.
