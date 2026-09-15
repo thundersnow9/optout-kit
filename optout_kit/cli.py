@@ -84,6 +84,8 @@ def cmd_draft(args: argparse.Namespace) -> int:
     profile = _load_profile(args.profile)
     rows = [t for t in targets.build(args.state, allow_id_upload=args.allow_id)
             if t.actionable and t.method == "email"]
+    if args.tier is not None:
+        rows = [t for t in rows if t.tier == args.tier]
     # Never draft for a broker the user has deliberately excluded. This is
     # honored by DEFAULT whenever a ledger is present: an exclusion that only
     # applies when you remember a flag is not an exclusion.
@@ -100,8 +102,6 @@ def cmd_draft(args: argparse.Namespace) -> int:
     elif not ledger_dir.is_dir():
         print(f"  note: no ledger at {ledger_dir}, so no exclusions applied",
               file=sys.stderr)
-    if args.tier is not None:
-        rows = [t for t in rows if t.tier == args.tier]
     rows = rows[: args.limit]
 
     outdir = Path(args.out) if args.out else None
