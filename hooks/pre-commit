@@ -4,14 +4,34 @@
 #
 # Blocks a commit whose staged diff contains personal data. Runs the generic
 # pattern layer always, and the exact-match layer when a profile.json is present.
+#
+# Set OPTOUT_BIN to override interpreter discovery.
+
+find_optout() {
+    [ -n "$OPTOUT_BIN" ] && { echo "$OPTOUT_BIN"; return; }
+    command -v optout >/dev/null 2>&1 && { echo "optout"; return; }
+    # Common layouts: a venv in this repo, or the kit checked out alongside it.
+    for c in ./.venv/bin/optout ../optout-kit/.venv/bin/optout \
+             ./venv/bin/optout ../optout-kit/venv/bin/optout; do
+        [ -x "$c" ] && { echo "$c"; return; }
+    done
+    # Last resort: the module, if it happens to be importable.
+    python3 -c "import optout_kit" 2>/dev/null && { echo "python3 -m optout_kit.cli"; return; }
+    echo ""
+}
+
+BIN=$(find_optout)
+if [ -z "$BIN" ]; then
+    echo "pre-commit: optout-kit not found; cannot scan for personal data." >&2
+    echo "  Install it (pip install -e path/to/optout-kit) or set OPTOUT_BIN." >&2
+    echo "  Refusing to commit unscanned: a PII leak in history is permanent." >&2
+    exit 1
+fi
 
 PROFILE=""
 for p in profile.json ../optout-state/profile.json; do
     [ -f "$p" ] && PROFILE="--profile $p" && break
 done
 
-if command -v optout >/dev/null 2>&1; then
-    optout guard $PROFILE || exit 1
-else
-    python3 -m optout_kit.cli guard $PROFILE || exit 1
-fi
+# shellcheck disable=SC2086
+$BIN guard $PROFILE || exit 1
