@@ -8,7 +8,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from . import clocks, directory, guard, laws, render, targets
+from . import canary, clocks, directory, guard, laws, render, targets
 
 
 def _load_profile(path: str | None) -> dict:
@@ -108,8 +108,11 @@ def cmd_draft(args: argparse.Namespace) -> int:
     if outdir:
         outdir.mkdir(parents=True, exist_ok=True)
 
+    overrides = canary.load_overrides(args.canaries)
     for t in rows:
-        subject, body = render.deletion(t.title, profile, args.state)
+        alias = canary.for_broker(profile, t.slug, overrides)
+        subject, body = render.deletion(t.title, profile, args.state,
+                                        canary_email=alias)
         if args.dry_run:
             print("=" * 72)
             print(f"TO: {t.email}")
@@ -176,14 +179,17 @@ def cmd_draft_escalations(args: argparse.Namespace) -> int:
     if outdir:
         outdir.mkdir(parents=True, exist_ok=True)
 
+    overrides = canary.load_overrides(args.canaries)
     for a in actions:
         entry = entries[a.slug]
+        alias = canary.for_broker(profile, a.slug, overrides)
         sent = entry.event_date("sent")
         if a.action == "appeal":
             subject, body = render.appeal(
                 a.title, profile, args.state,
                 original_date=str(sent) if sent else "an earlier date",
-                denied=entry.status == "denied", today=today)
+                denied=entry.status == "denied", today=today,
+                canary_email=alias)
         elif a.action == "ag_complaint":
             timeline = [
                 f"{ev.get('date', '?')}  {ev.get('type', '?')}"
@@ -191,12 +197,14 @@ def cmd_draft_escalations(args: argparse.Namespace) -> int:
             ]
             subject, body = render.ag_complaint(
                 a.title, profile, args.state, timeline=timeline,
-                appealed=entry.event_date("appealed") is not None, today=today)
+                appealed=entry.event_date("appealed") is not None, today=today,
+                canary_email=alias)
         else:  # refile: a fresh deletion request, citing the prior removal
             confirmed = entry.event_date("confirmed")
             subject, body = render.deletion(
                 a.title, profile, args.state, today=today,
-                prior_removal=str(confirmed) if confirmed else None)
+                prior_removal=str(confirmed) if confirmed else None,
+                canary_email=alias)
 
         if outdir:
             (outdir / f"{a.slug}.{a.action}.txt").write_text(
@@ -210,6 +218,35 @@ def cmd_draft_escalations(args: argparse.Namespace) -> int:
 
     if outdir:
         print(f"wrote {len(actions)} escalation drafts to {outdir}")
+    return 0
+
+
+def cmd_mark(args: argparse.Namespace) -> int:
+    """Append an event to ledger entries. This is what starts the clock."""
+    ledger = Path(args.ledger)
+    when = args.date or date.today().isoformat()
+    slugs = args.slugs or [p.stem for p in sorted(ledger.glob("*.json"))]
+
+    touched = 0
+    for slug in slugs:
+        path = ledger / f"{slug}.json"
+        if not path.exists():
+            print(f"  no ledger entry: {slug}", file=sys.stderr)
+            continue
+        entry = json.loads(path.read_text(encoding="utf-8"))
+        # Never silently reopen something the user deliberately excluded.
+        if entry.get("status") in clocks.NEVER_ESCALATE and not args.force:
+            print(f"  skipping {slug} ({entry['status']}); --force to override",
+                  file=sys.stderr)
+            continue
+        if args.tier is not None and entry.get("tier") != args.tier:
+            continue
+        entry.setdefault("events", []).append(
+            {"date": when, "type": args.event, **({"note": args.note} if args.note else {})})
+        entry["status"] = args.event
+        path.write_text(json.dumps(entry, indent=2) + "\n", encoding="utf-8")
+        touched += 1
+    print(f"marked {touched} entr{'y' if touched == 1 else 'ies'} as {args.event} on {when}")
     return 0
 
 
@@ -230,6 +267,30 @@ def cmd_check_clocks(args: argparse.Namespace) -> int:
     for a in actions:
         print(f"  {a.title[:34]:<34} {a.action:<14} {a.days_overdue:>4}d overdue  {a.citation or ''}")
     return 1 if args.fail_on_action else 0
+
+
+def cmd_trace(args: argparse.Namespace) -> int:
+    """Given an address that received mail, name the broker it was issued to."""
+    slug = canary.source_of(args.address)
+    if not slug:
+        print(f"{args.address} carries no canary tag, so the source cannot be attributed.")
+        return 1
+
+    ledger = Path(args.ledger)
+    entry_path = ledger / f"{slug}.json"
+    if entry_path.exists():
+        entry = json.loads(entry_path.read_text(encoding="utf-8"))
+        print(f"Issued to: {entry.get('title', slug)}  (slug {slug})")
+        print(f"  status: {entry.get('status')}")
+        for ev in entry.get("events", []):
+            print(f"  {ev.get('date')}  {ev.get('type')}")
+        if entry.get("status") == "confirmed":
+            print("\n  This broker confirmed deletion, yet the address is receiving mail.")
+            print("  Mark it relisted to trigger a refile citing that confirmation:")
+            print(f"    optout mark relisted {slug}")
+    else:
+        print(f"Issued to: {slug} (no ledger entry found under that slug)")
+    return 0
 
 
 def cmd_guard(args: argparse.Namespace) -> int:
@@ -262,6 +323,8 @@ def main(argv: list[str] | None = None) -> int:
     dr.add_argument("--limit", type=int, default=25)
     dr.add_argument("--tier", type=int)
     dr.add_argument("--allow-id", action="store_true")
+    dr.add_argument("--canaries", default="canaries.json",
+                    help="per-broker address overrides (default: ./canaries.json)")
     dr.add_argument("--ledger", default="ledger",
                     help="ledger whose exclusions to honor (default: ./ledger)")
     dr.add_argument("--ignore-exclusions", action="store_true",
@@ -281,9 +344,22 @@ def main(argv: list[str] | None = None) -> int:
     de.add_argument("--state", required=True)
     de.add_argument("--ledger", required=True)
     de.add_argument("--profile", help="path to profile.json in your PRIVATE repo")
+    de.add_argument("--canaries", default="canaries.json")
     de.add_argument("--today", help="override today's date (ISO) for testing")
     de.add_argument("--out")
     de.set_defaults(fn=cmd_draft_escalations)
+
+    mk = sub.add_parser("mark", help="record an event (sent, confirmed, denied, ...)")
+    mk.add_argument("event", choices=["sent", "acknowledged", "extended", "confirmed",
+                                      "denied", "appealed", "appeal_denied", "relisted"])
+    mk.add_argument("slugs", nargs="*", help="broker slugs (default: every entry)")
+    mk.add_argument("--ledger", default="ledger")
+    mk.add_argument("--tier", type=int, help="only entries in this tier")
+    mk.add_argument("--date", help="ISO date (default: today)")
+    mk.add_argument("--note")
+    mk.add_argument("--force", action="store_true",
+                    help="also mark entries that were deliberately excluded")
+    mk.set_defaults(fn=cmd_mark)
 
     ck = sub.add_parser("check-clocks", help="find lapsed statutory deadlines")
     ck.add_argument("--state", required=True)
@@ -292,6 +368,11 @@ def main(argv: list[str] | None = None) -> int:
     ck.add_argument("--issue", action="store_true", help="emit markdown issue body")
     ck.add_argument("--fail-on-action", action="store_true")
     ck.set_defaults(fn=cmd_check_clocks)
+
+    tr = sub.add_parser("trace", help="identify which broker leaked an address")
+    tr.add_argument("address")
+    tr.add_argument("--ledger", default="ledger")
+    tr.set_defaults(fn=cmd_trace)
 
     g = sub.add_parser("guard", help="scan the staged diff for personal data")
     g.add_argument("--profile", help="path to profile.json for exact matching")

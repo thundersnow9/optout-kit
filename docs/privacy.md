@@ -12,14 +12,50 @@ Git history is permanent and public forks cannot be recalled. A `.gitignore` is 
 convention, not a boundary: one `git add -A` on a bad day defeats it. Separating the
 repos means the public one has no personal data to leak in the first place.
 
-## Canary values
+## Canary addresses
 
-Give each major broker a slightly different benign variation of your details: a distinct
-middle initial, a different apartment-number format, a per-broker email alias. Record the
-mapping in `canaries.json` **in the private repo**.
+Removal is not permanent. Brokers re-acquire from each other, so a few months
+out the useful question is not "am I listed again" but "who leaked me".
 
-When a variant resurfaces on a site you never contacted, you know exactly who resold you,
-and your next request can say so. Publishing the map destroys the mechanism entirely.
+Set `canary_email_base` in your profile and each request discloses a unique
+tagged address:
+
+```json
+{ "emails": ["you@gmail.com"], "canary_email_base": "you@gmail.com" }
+```
+
+Spokeo is told `you+spokeo@gmail.com`, Acxiom `you+acxiom@gmail.com`. All deliver
+to the same inbox. When mail arrives at a tag you gave to exactly one broker,
+that broker is the source:
+
+```sh
+$ optout trace you+spokeo@gmail.com
+Issued to: Spokeo  (slug spokeo)
+  status: confirmed
+  This broker confirmed deletion, yet the address is receiving mail.
+  Mark it relisted to trigger a refile citing that confirmation:
+    optout mark relisted spokeo
+```
+
+The tag is deterministic, so it reverses without a lookup table and there is
+nothing to keep in sync.
+
+**The canary supplements your real address, it does not replace it.** A broker
+searches its records by the address it already holds; substituting the tagged
+one would reduce the chance of matching your record at all, trading worse
+deletion for better detection.
+
+**The tradeoff:** this hands each broker one extra data point. It is an alias of
+an address they already have, and it is the only reliable way to attribute a
+later leak, but it is a real disclosure rather than a free win.
+
+**When "+" addressing is rejected.** Some brokers strip or refuse tagged
+addresses in web forms. Pin an explicit alternative in `canaries.json` (private,
+gitignored) rather than losing the canary for that broker:
+
+```json
+{ "brokers": { "spokeo": { "email_alias": "distinct-alias@yourdomain.com" } } }
+```
 
 ## The guard
 

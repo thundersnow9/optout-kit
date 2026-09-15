@@ -12,7 +12,7 @@ from pathlib import Path
 from string import Template
 from typing import Any
 
-from . import laws
+from . import canary, laws
 
 
 def _template(name: str) -> Template:
@@ -27,7 +27,7 @@ def _template(name: str) -> Template:
     raise FileNotFoundError(f"template {name!r} not found")
 
 
-def identity_block(profile: dict[str, Any]) -> str:
+def identity_block(profile: dict[str, Any], canary_email: str | None = None) -> str:
     """The minimum a broker needs to find a record, formatted as a block.
 
     Deliberately excludes SSN, driver's licence and date of birth: brokers do
@@ -44,6 +44,10 @@ def identity_block(profile: dict[str, Any]) -> str:
         lines.append(f"  {label}: " + ", ".join(p for p in parts if p))
     for email in profile.get("emails", []) or []:
         lines.append(f"  Email: {email}")
+    # Listed in addition to the real address, never instead of it: the broker
+    # matches on the address it already holds.
+    if canary_email:
+        lines.append(f"  Email (alternate): {canary_email}")
     for phone in profile.get("phones", []) or []:
         lines.append(f"  Phone: {phone}")
     if profile.get("birth_year"):
@@ -60,7 +64,8 @@ def _subject_and_body(text: str) -> tuple[str, str]:
 
 def deletion(broker_title: str, profile: dict[str, Any], state: str,
              today: date | None = None,
-             prior_removal: str | None = None) -> tuple[str, str]:
+             prior_removal: str | None = None,
+             canary_email: str | None = None) -> tuple[str, str]:
     law = laws.load(state)
     rc = law.raw.get("response_citation")
     appeal = law.appeal
@@ -88,7 +93,7 @@ def deletion(broker_title: str, profile: dict[str, Any], state: str,
         deletion_citation=law.deletion_citation,
         response_days=law.response_days,
         response_citation_clause=f" ({rc})" if rc else "",
-        identity_block=identity_block(profile),
+        identity_block=identity_block(profile, canary_email),
         appeal_clause=appeal_clause,
         today=(today or date.today()).isoformat(),
         signature=profile.get("signature", profile.get("full_name", "")),
@@ -97,7 +102,8 @@ def deletion(broker_title: str, profile: dict[str, Any], state: str,
 
 
 def appeal(broker_title: str, profile: dict[str, Any], state: str, original_date: str,
-           denied: bool, today: date | None = None) -> tuple[str, str]:
+           denied: bool, today: date | None = None,
+           canary_email: str | None = None) -> tuple[str, str]:
     law = laws.load(state)
     ap = law.appeal
     days = ap.get("response_days") or law.response_days
@@ -115,7 +121,7 @@ def appeal(broker_title: str, profile: dict[str, Any], state: str, original_date
         ),
         appeal_deadline_clause=f"{law.abbrev} requires a written response within {days} days.",
         ag_name=law.ag.get("name", "state Attorney General"),
-        identity_block=identity_block(profile),
+        identity_block=identity_block(profile, canary_email),
         today=(today or date.today()).isoformat(),
         signature=profile.get("signature", profile.get("full_name", "")),
     )
@@ -124,7 +130,8 @@ def appeal(broker_title: str, profile: dict[str, Any], state: str, original_date
 
 def ag_complaint(broker_title: str, profile: dict[str, Any], state: str,
                  timeline: list[str], appealed: bool,
-                 today: date | None = None) -> tuple[str, str]:
+                 today: date | None = None,
+                 canary_email: str | None = None) -> tuple[str, str]:
     law = laws.load(state)
     reg = law.raw.get("broker_registry") or {}
     registry_clause = ""

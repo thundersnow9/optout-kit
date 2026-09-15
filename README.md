@@ -70,6 +70,8 @@ optout states                                   # what the matrix knows
 optout build-targets --state OR                 # prioritized work queue
 optout draft --state OR --profile ../optout-state/profile.json --tier 1 --dry-run
 optout check-clocks --state OR --ledger ../optout-state/ledger --issue
+optout mark sent --tier 0                       # start the statutory clocks
+optout trace you+spokeo@gmail.com               # who leaked this address?
 optout guard --profile profile.json             # pre-commit PII scan
 ```
 

@@ -55,3 +55,31 @@ def test_excluded_statuses_are_all_terminal():
         assert status in clocks.TERMINAL, status
     for status in ("skipped_employer_conflict", "skipped_id_required"):
         assert status in clocks.NEVER_ESCALATE, status
+
+
+def test_canary_tag_is_deterministic_and_reversible():
+    from optout_kit import canary
+    addr = canary.tag_for("someone@gmail.com", "spokeo")
+    assert addr == "someone+spokeo@gmail.com"
+    assert canary.source_of(addr) == "spokeo"
+
+
+def test_canary_does_not_stack_tags():
+    from optout_kit import canary
+    assert canary.tag_for("someone+old@gmail.com", "radaris") == "someone+radaris@gmail.com"
+
+
+def test_canary_off_unless_base_configured():
+    from optout_kit import canary
+    assert canary.for_broker({}, "spokeo") is None
+    assert canary.for_broker({"canary_email_base": "a@b.com"}, "spokeo") == "a+spokeo@b.com"
+
+
+def test_canary_supplements_rather_than_replaces_real_email():
+    # Replacing the real address would hurt the broker's ability to match the
+    # record at all, which defeats the point of sending the request.
+    from optout_kit import render
+    profile = {"full_name": "A B", "emails": ["real@gmail.com"]}
+    block = render.identity_block(profile, canary_email="real+spokeo@gmail.com")
+    assert "real@gmail.com" in block
+    assert "real+spokeo@gmail.com" in block
