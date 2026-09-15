@@ -84,13 +84,22 @@ def cmd_draft(args: argparse.Namespace) -> int:
     profile = _load_profile(args.profile)
     rows = [t for t in targets.build(args.state, allow_id_upload=args.allow_id)
             if t.actionable and t.method == "email"]
-    # Never draft for a broker the user has deliberately excluded.
-    if args.ledger:
+    # Never draft for a broker the user has deliberately excluded. This is
+    # honored by DEFAULT whenever a ledger is present: an exclusion that only
+    # applies when you remember a flag is not an exclusion.
+    ledger_dir = Path(args.ledger)
+    if ledger_dir.is_dir() and not args.ignore_exclusions:
         excluded = {
-            e.slug for e in clocks.load_ledger(Path(args.ledger))
+            e.slug: e.status for e in clocks.load_ledger(ledger_dir)
             if e.status in clocks.TERMINAL
         }
+        held = [t for t in rows if t.slug in excluded]
         rows = [t for t in rows if t.slug not in excluded]
+        for t in held:
+            print(f"  skipping {t.title} ({excluded[t.slug]})", file=sys.stderr)
+    elif not ledger_dir.is_dir():
+        print(f"  note: no ledger at {ledger_dir}, so no exclusions applied",
+              file=sys.stderr)
     if args.tier is not None:
         rows = [t for t in rows if t.tier == args.tier]
     rows = rows[: args.limit]
@@ -253,7 +262,10 @@ def main(argv: list[str] | None = None) -> int:
     dr.add_argument("--limit", type=int, default=25)
     dr.add_argument("--tier", type=int)
     dr.add_argument("--allow-id", action="store_true")
-    dr.add_argument("--ledger", help="skip brokers already terminal in this ledger")
+    dr.add_argument("--ledger", default="ledger",
+                    help="ledger whose exclusions to honor (default: ./ledger)")
+    dr.add_argument("--ignore-exclusions", action="store_true",
+                    help="draft even for brokers marked excluded (rarely correct)")
     dr.add_argument("--dry-run", action="store_true")
     dr.add_argument("--out")
     dr.set_defaults(fn=cmd_draft)

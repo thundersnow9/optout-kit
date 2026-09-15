@@ -43,3 +43,15 @@ def test_unknown_state_is_a_clear_error():
         assert "CONTRIBUTING" in str(e)
     else:
         raise AssertionError("expected UnknownState")
+
+
+def test_excluded_statuses_are_all_terminal():
+    # cmd_draft filters on clocks.TERMINAL, so every status that should suppress
+    # a draft has to be in that set. A status missing here silently generates
+    # mail to a broker the user deliberately excluded.
+    from optout_kit import clocks
+    for status in ("skipped_employer_conflict", "skipped_id_required",
+                   "no_route", "abandoned", "confirmed"):
+        assert status in clocks.TERMINAL, status
+    for status in ("skipped_employer_conflict", "skipped_id_required"):
+        assert status in clocks.NEVER_ESCALATE, status
